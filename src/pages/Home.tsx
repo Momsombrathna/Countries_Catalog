@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Country } from '../interfaces/CountryData'
 import config from '../api/config';
@@ -15,13 +15,24 @@ const Home: React.FC = () => {
     // set sort order state
     const [activeButton, setActiveButton] = React.useState<string>('');
 
+    // set search state
+    const [searchTerm, setSearchTerm] = React.useState<string>('');
+
     // set the original countries state
     const [originalCountries, setOriginalCountries] = React.useState<Country[]>([]);
+
+    // Add a new state variable for search loading
+    const [isSearchLoading, setIsSearchLoading] = useState(false);
 
     // set pagination state
     const [currentPage, setCurrentPage] = React.useState(0);
     const itemsPerPage = 25;
 
+    // Fuzzy search function
+    function fuzzySearch(searchTerm: string, data: Country[]) {
+        const regex = new RegExp(searchTerm.split('').join('.*'), 'i');
+        return data.filter((item) => regex.test(item.name.official));
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -30,13 +41,31 @@ const Home: React.FC = () => {
                 setCountries(response.data);
                 // console.log(response.data);
                 setOriginalCountries(response.data); // store the original response data
+                setIsSearchLoading(false);
             } catch (err) {
                 console.error('Error fetching data:', err);
+                setIsSearchLoading(false);
             }
         }
 
         fetchData();
     }, []);
+
+    // Search Countries by name
+    useEffect(() => {
+        if (searchTerm) {
+            axios.get(`${config.apiUrl}/name/${searchTerm}`)
+                .then(response => {
+                    const result = fuzzySearch(searchTerm, response.data);
+                    setCountries(result);
+                })
+                .catch(err => {
+                    console.error('Error fetching data:', err);
+                });
+        } else {
+            setCountries(originalCountries);
+        }
+    }, [searchTerm]);
 
     // Sort function for asc
     const sortAscending = () => {
@@ -61,6 +90,19 @@ const Home: React.FC = () => {
 
     return (
         <>
+            {isSearchLoading && (
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)'
+                }}>
+                    <svg className="animate-spin h-10 w-10 text-sky-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                </div>
+            )}
             <div className=" w-full bg-slate-300 ">
                 <header className="App-header p-5 flex flex-row justify-center items-center">
                     <h1 className="text-4xl font-bold font-serif text-center text-gray-800">Countries Catalog</h1>
@@ -76,6 +118,8 @@ const Home: React.FC = () => {
                             className="peer h-full w-full outline-none text-sm text-gray-700 pr-2"
                             type="text"
                             id="search"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search country name..." />
                     </div>
                 </div>
@@ -129,6 +173,7 @@ const Home: React.FC = () => {
                         previousLinkClassName={'px-2  flex justify-center py-1 rounded text-black hover:bg-blue-500 hover:text-white transition-colors duration-200'}
                         nextLinkClassName={'px-2 py-1  flex justify-center rounded  text-black hover:bg-blue-500 hover:text-white transition-colors duration-200'}
                         disabledClassName={'opacity-50 cursor-not-allowed'}
+                        activeClassName={'activePage'}
                     />
                     <br />
                 </div>
