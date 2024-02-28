@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import axios from 'axios';
 import { Country } from '../interfaces/CountryData'
 import config from '../api/config';
@@ -21,9 +21,6 @@ const Home: React.FC = () => {
     // set the original countries state
     const [originalCountries, setOriginalCountries] = React.useState<Country[]>([]);
 
-    // Add a new state variable for search loading
-    const [isSearchLoading, setIsSearchLoading] = useState(false);
-
     // set pagination state
     const [currentPage, setCurrentPage] = React.useState(0);
     const itemsPerPage = 25;
@@ -34,6 +31,7 @@ const Home: React.FC = () => {
         return data.filter((item) => regex.test(item.name.official));
     }
 
+    // fetch all data from api
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -41,10 +39,8 @@ const Home: React.FC = () => {
                 setCountries(response.data);
                 // console.log(response.data);
                 setOriginalCountries(response.data); // store the original response data
-                setIsSearchLoading(false);
             } catch (err) {
                 console.error('Error fetching data:', err);
-                setIsSearchLoading(false);
             }
         }
 
@@ -90,19 +86,6 @@ const Home: React.FC = () => {
 
     return (
         <>
-            {isSearchLoading && (
-                <div style={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)'
-                }}>
-                    <svg className="animate-spin h-10 w-10 text-sky-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                </div>
-            )}
             <div className=" w-full bg-slate-300 ">
                 <header className="App-header p-5 flex flex-row justify-center items-center">
                     <h1 className="text-4xl font-bold font-serif text-center text-gray-800">Countries Catalog</h1>
@@ -148,9 +131,9 @@ const Home: React.FC = () => {
                     <div className='container mx-auto'>
                         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
                             {
-                                currentItems.map((item) => {
+                                currentItems.map((item, index) => {
                                     return (
-                                        <CountryCard item={item} key={item.name.common} />
+                                        <CountryCard item={item} key={index} />
                                     )
                                 })
                             }
@@ -178,6 +161,7 @@ const Home: React.FC = () => {
                     <br />
                 </div>
             </div>
+
         </>
     );
 };
