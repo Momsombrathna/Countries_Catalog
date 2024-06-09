@@ -14,7 +14,7 @@ const CountryCard = ({ item }: { item: Country }) => {
     return (
         <>
             <div className='inline-block m-4'>
-                <div className="max-w-md bg-slate border-2 border-gray-300 rounded-xl overflow-hidden transition-colors duration-500">
+                <div className="max-w-md bg-white/30 rounded-xl overflow-hidden transition-colors duration-500">
 
                     <div className="p-4">
                         <div className='flex justify-start items-start'>
@@ -45,7 +45,7 @@ const CountryCard = ({ item }: { item: Country }) => {
                         {isOpen && (
                             <div className="fixed inset-0 flex items-center justify-center z-50">
                                 <div className="absolute inset-0 bg-black opacity-50"></div>
-                                <div className="bg-slate-300 rounded-lg shadow-2xl p-3 m-4 sm:w-full md:w-1/2 lg:w-1/3 xl:w-1/4 text-center relative z-10">
+                                <div className="backdrop-blur-xl bg-white/30 rounded-lg shadow-2xl p-3 m-4 sm:w-full md:w-1/2 lg:w-1/3 xl:w-1/4 text-center relative z-10">
                                     <div className='flex flex-row justify-start gap-2 items-start'>
                                         <img src={flags.png} alt="" className=' h-32 w-60 object-cover rounded-md' />
                                         <div className='flex flex-col justify-start items-start'>
@@ -82,7 +82,6 @@ const CountryCard = ({ item }: { item: Country }) => {
                             </div>
                         )}
                     </div>
-
                 </div>
             </div>
         </>

@@ -6,39 +6,38 @@ import CountryCard from '../components/CountryCard';
 import ReactPaginate from 'react-paginate';
 import { GrFormNext } from "react-icons/gr";
 import { GrFormPrevious } from "react-icons/gr";
+import AnimationSearch from "../assets/AnimationSearch.json";
+import Lottie from 'lottie-react';
+
 
 const Home: React.FC = () => {
 
-    // set the countries state
     const [countries, setCountries] = React.useState<Country[]>([]);
-
-    // set sort order state
     const [activeButton, setActiveButton] = React.useState<string>('');
-
-    // set search state
     const [searchTerm, setSearchTerm] = React.useState<string>('');
-
-    // set the original countries state
+    const [loading, setLoading] = React.useState<boolean>(true);
     const [originalCountries, setOriginalCountries] = React.useState<Country[]>([]);
-
-    // set pagination state
     const [currentPage, setCurrentPage] = React.useState(0);
     const itemsPerPage = 25;
 
-    // Fuzzy search function
     function fuzzySearch(searchTerm: string, data: Country[]) {
         const regex = new RegExp(searchTerm.split('').join('.*'), 'i');
         return data.filter((item) => regex.test(item.name.official));
     }
 
-    // fetch all data from api
+
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
                 const response = await axios.get(`${config.apiUrl}/all`);
-                setCountries(response.data);
-                // console.log(response.data);
-                setOriginalCountries(response.data); // store the original response data
+                if (response.data) {
+                    setCountries(response.data);
+                    setOriginalCountries(response.data);
+                    setLoading(false);
+                } else {
+                    console.error('Error fetching data:', response);
+                }
             } catch (err) {
                 console.error('Error fetching data:', err);
             }
@@ -47,55 +46,57 @@ const Home: React.FC = () => {
         fetchData();
     }, []);
 
-    // Search Countries by name
+
     useEffect(() => {
+        setLoading(true);
         if (searchTerm) {
-            axios.get(`${config.apiUrl}/name/${searchTerm}`)
-                .then(response => {
-                    const result = fuzzySearch(searchTerm, response.data);
-                    setCountries(result);
-                })
-                .catch(err => {
-                    console.error('Error fetching data:', err);
-                });
+            setLoading(false);
+            const results = fuzzySearch(searchTerm, originalCountries);
+            setCountries(results);
         } else {
+            setLoading(false);
             setCountries(originalCountries);
         }
-    }, [searchTerm]);
+    }, [searchTerm, originalCountries]);
 
-    // Sort function for asc
     const sortAscending = () => {
         setCountries([...countries].sort((a, b) => a.name.official.localeCompare(b.name.official)));
         setActiveButton('asc');
     }
 
-    // Sort function for desc
     const sortDescending = () => {
         setCountries([...countries].sort((a, b) => b.name.official.localeCompare(a.name.official)));
         setActiveButton('desc');
     }
 
-    // Function reset sorting data to original data sorting
     const resetSorting = () => {
         setCountries(originalCountries);
         setActiveButton('');
     }
 
-    // Calculate the items for the current page
     const currentItems = countries.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
 
     return (
         <>
-            <div className=" w-full bg-slate-300 ">
+            <div className=" w-full bg-gradient-to-r from-blue-300 to-purple-500 ">
                 <header className="App-header p-5 flex flex-row justify-center items-center">
-                    <h1 className="text-4xl font-bold font-serif text-center text-gray-800">Countries Catalog</h1>
+                    <h1 className="text-4xl font-bold font-monos text-center text-gray-800">Countries Catalog</h1>
                 </header>
                 <div className='max-w-md md:px-0 px-3 mx-auto'>
                     <div className="relative flex items-center w-full h-12 rounded-lg focus-within:shadow-lg bg-white overflow-hidden">
                         <div className="grid place-items-center h-full w-12 text-gray-300">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+                            {loading ? (
+                                <Lottie
+                                    animationData={AnimationSearch}
+                                    className='w-8 '
+                                />
+                            ) : (fuzzySearch(searchTerm, originalCountries).length > 0 ? (
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 19l-7-7m0 0l-7 7m7-7V5" />
+                                </svg>
+                            ) : null
+                            )}
                         </div>
                         <input
                             className="peer h-full w-full outline-none text-sm text-gray-700 pr-2"
@@ -107,7 +108,7 @@ const Home: React.FC = () => {
                     </div>
                 </div>
                 <div className="flex flex-col gap-2 justify-center items-center mt-5">
-                    <p className="text-lg font">Sort by country name</p>
+                    <p className="text-lg  font-monos">Sort by country name</p>
                     <div>
                         <button
                             onClick={() => sortAscending()}
@@ -128,16 +129,27 @@ const Home: React.FC = () => {
                     </div>
                 </div>
                 <div className='w-full  '>
-                    <div className='container mx-auto'>
-                        <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4'>
-                            {
-                                currentItems.map((item, index) => {
-                                    return (
-                                        <CountryCard item={item} key={index} />
-                                    )
-                                })
-                            }
-                        </div>
+                    <div className='container mx-auto h-auto'>
+                        {loading ? (
+                            <div className="flex justify-center items-center min-h-screen">
+                                <Lottie
+                                    animationData={AnimationSearch}
+                                    className='w-48 md:w-56 lg:w-72 xl:w-96'
+                                />
+                            </div>
+                        ) : (
+
+                            <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-screen'>
+                                {
+                                    currentItems.map((item, index) => {
+                                        return (
+                                            <CountryCard item={item} key={index} />
+                                        )
+                                    })
+                                }
+
+                            </div>
+                        )}
                     </div>
 
                     <ReactPaginate
