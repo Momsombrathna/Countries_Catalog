@@ -46,6 +46,8 @@ const Home: React.FC = () => {
         fetchData();
     }, []);
 
+    console.log(countries);
+
 
     useEffect(() => {
         setLoading(true);
@@ -130,7 +132,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className='w-full  '>
                     <div className='container mx-auto h-auto'>
-                        {loading ? (
+                        {loading || !countries ? (
                             <div className="flex justify-center items-center min-h-screen">
                                 <Lottie
                                     animationData={AnimationSearch}
