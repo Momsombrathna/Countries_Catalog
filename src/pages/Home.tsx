@@ -87,11 +87,13 @@ const Home: React.FC = () => {
                 <div className='max-w-md md:px-0 px-3 mx-auto'>
                     <div className="relative flex items-center w-full h-12 rounded-lg focus-within:shadow-lg bg-white overflow-hidden">
                         <div className="grid place-items-center h-full w-12 text-gray-300">
-                            {loading ? (
-                                <Lottie
-                                    animationData={AnimationSearch}
-                                    className='w-8 '
-                                />
+                            {loading || countries.length === 0 ? (
+                                <div className="animate-spin">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 19l-7-7m0 0l-7 7m7-7V5" />
+                                    </svg>
+                                </div>
                             ) : (fuzzySearch(searchTerm, originalCountries).length > 0 ? (
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -132,7 +134,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className='w-full  '>
                     <div className='container mx-auto h-auto'>
-                        {loading || !countries ? (
+                        {loading || countries.length === 0 ? (
                             <div className="flex justify-center items-center min-h-screen">
                                 <Lottie
                                     animationData={AnimationSearch}
